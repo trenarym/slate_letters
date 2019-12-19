@@ -95,7 +95,7 @@ class LetterGetter:
         soup = BeautifulSoup(r.text, "html.parser")
         body = soup.find("body").find("body")
         # return source code of content body element
-        return str(body)
+        return str(body).replace('//', 'https://')
 
     def render_html(self, application, letter, css="static/style.css", **kwargs):
         """
