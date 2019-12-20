@@ -22,6 +22,8 @@ logger.setLevel(logging.INFO)
 
 
 if __name__ == "__main__":
+    # local_destination = LocalDiskDestination('decision_letters.zip')
+    # app.add_destination(local_destination)
     sftp_destination = SFTPDestination(
         host=Config.SFTP_HOST,
         username=Config.SFTP_USERNAME,

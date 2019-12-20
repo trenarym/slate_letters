@@ -37,9 +37,10 @@ class LetterGetter:
         pdf_fos = [BytesIO(pdf) for pdf in pdfs]
         for fo in pdf_fos:
             pdf_merger.append(fo)
-        out_pdf = BytesIO()
-        pdf_merger.write(out_pdf)
-        return out_pdf.getvalue()
+        with BytesIO() as out_pdf:
+            pdf_merger.write(out_pdf)
+            pdf_data = out_pdf.getvalue()
+        return pdf_data
 
     @staticmethod
     def _mask_header(pdf_obj, height=1.375):
@@ -55,21 +56,22 @@ class LetterGetter:
         bytes
             The bytes of the modified pdf.
         """
-        final_pdf = BytesIO()
-        watermark = BytesIO()
-        c = Canvas(watermark, pagesize=pagesizes.letter)
-        c.setFillColorRGB(255, 255, 255)
-        c.rect(0, (11 - height) * inch, 8.5 * inch, height * inch, stroke=0, fill=1)
-        c.showPage()
-        c.save()
-        pdfwriter = PdfFileWriter()
-        pdf = PdfFileReader(pdf_obj)
-        for i in range(pdf.getNumPages()):
-            page = pdf.getPage(i)
-            page.mergePage(PdfFileReader(watermark).getPage(0))
-            pdfwriter.addPage(page)
-        pdfwriter.write(final_pdf)
-        return final_pdf.getvalue()
+        with BytesIO() as final_pdf:
+            with BytesIO() as watermark:
+                c = Canvas(watermark, pagesize=pagesizes.letter)
+                c.setFillColorRGB(255, 255, 255)
+                c.rect(0, (11 - height) * inch, 8.5 * inch, height * inch, stroke=0, fill=1)
+                c.showPage()
+                c.save()
+                pdfwriter = PdfFileWriter()
+                pdf = PdfFileReader(pdf_obj)
+                for i in range(pdf.getNumPages()):
+                    page = pdf.getPage(i)
+                    page.mergePage(PdfFileReader(watermark).getPage(0))
+                    pdfwriter.addPage(page)
+                pdfwriter.write(final_pdf)
+                pdf_data = final_pdf.getvalue()
+        return pdf_data
 
     def retrieve_html(self, application, letter, **kwargs):
         """
@@ -139,8 +141,8 @@ class LetterGetter:
         url = f"{self.hostname}/apply/update?cmd=stream&id={decision}"
         r = self.session.get(url)
         r.raise_for_status()
-        attachment = BytesIO(r.content)
-        masked_attachment = self._mask_header(attachment)
+        with BytesIO(r.content) as attachment:
+            masked_attachment = self._mask_header(attachment)
         return masked_attachment
 
     def render_letter(self, decision, application, letter, **kwargs):

@@ -17,6 +17,9 @@ thread_local = threading.local()
 logger = logging.getLogger(__name__)
 
 
+def chunk(sequence, size):
+    return (sequence[pos:pos+size] for pos in range(0, len(sequence), size))
+
 class LetterService:
     def __init__(self, config):
         self.config = config
@@ -61,13 +64,14 @@ class LetterService:
     def combine(self, letters):
         if not letters:
             raise NoLettersToRenderError
-        zip_obj = BytesIO()
-        with ZipFile(zip_obj, "w", allowZip64=True) as zf:
-            for letter in letters:
-                zf.writestr(letter.filename, letter.pdf)
-            index_data = self.render_indexes(letters)
-            zf.writestr("index.txt", index_data)
-        return zip_obj.getvalue()
+        with BytesIO() as zip_obj:
+            with ZipFile(zip_obj, "w", allowZip64=True) as zf:
+                for letter in letters:
+                    zf.writestr(letter.filename, letter.pdf)
+                index_data = self.render_indexes(letters)
+                zf.writestr("index.txt", index_data)
+            zip_data = zip_obj.getvalue()
+        return zip_data
 
     def send(self, data):
         for destination in self.destinations:
@@ -109,8 +113,8 @@ class LetterService:
         logger.info("Letter service started.")
         query_data = self.query()
         logger.info(f"{len(query_data):,} letters in query.")
-        if query_data:
-            letters = self.fetch(query_data)
+        for query_chunk in chunk(query_data, 1000):
+            letters = self.fetch(query_chunk)
             logger.info(f"{len(letters):,} letters retrieved.")
             zip_data = self.combine(letters)
             self.send(zip_data)

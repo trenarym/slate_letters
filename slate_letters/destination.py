@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO
+import os
 import pysftp
 
 
@@ -23,7 +24,11 @@ class LocalDiskDestination(BaseDestination):
         self.filepath = filepath
 
     def send(self, bytes_):
-        with open(self.filepath, "wb") as f:
+        dttm_fmt = "%Y%m%d%H%M%S"
+        now = datetime.now().strftime(dttm_fmt)
+        root, ext = os.path.splitext(self.filepath)
+        filepath = f"{root}_{now}{ext}"
+        with open(filepath, "wb") as f:
             f.write(bytes_)
 
 
