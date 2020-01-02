@@ -25,6 +25,13 @@ to the end of the string:
 
 "Go to <a href='https://google.com'>Google</a>" -> "Go to Google (https://google.com)"
 */
-/* a[href^="http://"]:after, a[href^="https://"]:after {
+a[href^="http://"]:after, a[href^="https://"]:after {
   content: " (" attr(href) ")";
-} */
+  text-decoration: none;
+  color: inherit
+}
+
+a {
+  text-decoration: none;
+  color: #000;
+}

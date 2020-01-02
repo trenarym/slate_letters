@@ -96,8 +96,11 @@ class LetterGetter:
         # letter html body is nested within the body of response
         soup = BeautifulSoup(r.text, "html.parser")
         body = soup.find("body").find("body")
-        # return source code of content body element
-        return str(body).replace('//', 'https://')
+        # reinsert the protocol for href and src urls
+        cleaned_body = str(body).replace('href="//', 'href="https://')
+        cleaned_body = cleaned_body.replace('src="//', 'src="https://')
+        # returned cleaned body
+        return cleaned_body
 
     def render_html(self, application, letter, css="static/style.css", **kwargs):
         """
