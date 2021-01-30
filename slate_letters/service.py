@@ -49,14 +49,14 @@ class LetterService:
     def fetch(self, letter_data):
         futures = []
         letters = []
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workser=4) as executor:
             for letter in letter_data:
                 futures.append(executor.submit(self.fetch_letter, **letter))
             for future in as_completed(futures):
                 try:
                     letter = future.result()
                 except Exception as e:
-                    logger.error(e)
+                    logger.exception(e)
                 else:
                     letters.append(letter)
         return letters
@@ -113,9 +113,11 @@ class LetterService:
         logger.info("Letter service started.")
         query_data = self.query()
         logger.info(f"{len(query_data):,} letters in query.")
-        for query_chunk in chunk(query_data, 1000):
+        for query_chunk in chunk(query_data, self.config.LETTERS_PER_ZIP):
             letters = self.fetch(query_chunk)
             logger.info(f"{len(letters):,} letters retrieved.")
             zip_data = self.combine(letters)
             self.send(zip_data)
+            del letters
+            del zip_data
         logger.info("Letter service completed.")

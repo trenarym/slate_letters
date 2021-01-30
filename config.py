@@ -16,3 +16,4 @@ class Config:
     SFTP_USERNAME = os.getenv("SFTP_USERNAME")
     SFTP_PASSWORD = os.getenv("SFTP_PASSWORD")
     SFTP_FILENAME = os.getenv("SFTP_FILENAME")
+    LETTERS_PER_ZIP = int(os.getenv('LETTERS_PER_ZIP', 500))
