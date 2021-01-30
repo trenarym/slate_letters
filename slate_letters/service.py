@@ -6,7 +6,7 @@ import logging
 import threading
 from zipfile import ZipFile
 
-from slate_utils.session import get_external_session
+from slate_utils.session import SlateSession
 
 from slate_letters.exceptions import NoLettersToRenderError
 from slate_letters.letter import Letter
@@ -35,7 +35,7 @@ class LetterService:
             hostname = self.config.SESSION_HOSTNAME
             username = self.config.SESSION_USERNAME
             password = self.config.SESSION_PASSWORD
-            thread_local.session = get_external_session(hostname, username, password)
+            thread_local.session = SlateSession(hostname, username, password, external=True)
         return thread_local.session
 
     def query(self):
@@ -49,7 +49,7 @@ class LetterService:
     def fetch(self, letter_data):
         futures = []
         letters = []
-        with ThreadPoolExecutor(max_workser=4) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             for letter in letter_data:
                 futures.append(executor.submit(self.fetch_letter, **letter))
             for future in as_completed(futures):
