@@ -60,7 +60,9 @@ class LetterGetter:
             with BytesIO() as watermark:
                 c = Canvas(watermark, pagesize=pagesizes.letter)
                 c.setFillColorRGB(255, 255, 255)
-                c.rect(0, (11 - height) * inch, 8.5 * inch, height * inch, stroke=0, fill=1)
+                c.rect(
+                    0, (11 - height) * inch, 8.5 * inch, height * inch, stroke=0, fill=1
+                )
                 c.showPage()
                 c.save()
                 pdfwriter = PdfFileWriter()

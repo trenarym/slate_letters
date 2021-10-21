@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def chunk(sequence, size):
-    return (sequence[pos:pos+size] for pos in range(0, len(sequence), size))
+    return (sequence[pos : pos + size] for pos in range(0, len(sequence), size))
+
 
 class LetterService:
     def __init__(self, config):
@@ -35,7 +36,9 @@ class LetterService:
             hostname = self.config.SESSION_HOSTNAME
             username = self.config.SESSION_USERNAME
             password = self.config.SESSION_PASSWORD
-            thread_local.session = SlateSession(hostname, username, password, external=True)
+            thread_local.session = SlateSession(
+                hostname, username, password, external=True
+            )
         return thread_local.session
 
     def query(self):
